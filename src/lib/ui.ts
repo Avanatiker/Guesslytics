@@ -8,6 +8,7 @@ let ratingChart: any = null; // The Chart.js instance.
 let isGraphExpanded = false;
 let refreshIntervalId: number | null = null;
 let countdownIntervalId: number | null = null;
+let showingCompletionMessage = false;
 
 // --- UI Update Functions ---
 
@@ -34,18 +35,27 @@ export function setSyncState(
     if (syncing) {
         if (countdownIntervalId) clearInterval(countdownIntervalId);
         countdownIntervalId = null;
-        timerEl.style.display = 'none';
-        statusEl.innerHTML = `${text} <div class="gg-spinner"></div>`;
+        timerEl.style.display = '';
+        timerEl.classList.add('status-message', 'minimal-display');
+        timerEl.innerHTML = `<span class="full-text">${text} <div class="gg-spinner"></div></span><span class="minimal-text"><div class="gg-spinner"></div></span>`;
+        statusEl.innerText = '';
     } else {
-        statusEl.innerText = `✓ Up-to-date`;
+        showingCompletionMessage = true;
+        timerEl.style.display = '';
+        timerEl.classList.add('status-message', 'minimal-display');
+        const displayText = text || '✓ Up-to-date';
+        timerEl.innerHTML = `<span class="full-text">${displayText}</span><span class="minimal-text">✓</span>`;
+        statusEl.innerText = '';
         setTimeout(() => {
-            if (statusEl && statusEl.innerText === `✓ Up-to-date`) {
-                statusEl.innerText = '';
+            if (timerEl && timerEl.classList.contains('status-message')) {
+                timerEl.innerHTML = '';
+                timerEl.classList.remove('status-message', 'minimal-display');
+                showingCompletionMessage = false;
+                if (settings && callback) {
+                    startRefreshCycle(settings, callback);
+                }
             }
         }, 3000);
-        if (settings && callback) {
-            startRefreshCycle(settings, callback);
-        }
     }
 }
 
@@ -71,11 +81,19 @@ export function setupUI(
     container.id = 'guesslyticsContainer';
     container.innerHTML = `
         <div class="guesslytics-header">
-            <div class="guesslytics-title-wrapper"><h3>RATING HISTORY</h3><span id="guesslyticsStatus"></span><span id="guesslyticsTimer"></span></div>
-            <div class="chart-buttons">
-                <button id="guesslyticsResyncBtn" title="Manual Sync">${ICONS.RESYNC}</button>
-                <button id="guesslyticsToggleBtn" title="Toggle Graph Size">${ICONS.EXPAND}</button>
-                <button id="guesslyticsSettingsBtn" title="Settings">${ICONS.SETTINGS}</button>
+            <div class="guesslytics-header-row">
+                <div class="guesslytics-title-wrapper">
+                    <h3><span class="full-title">RATING HISTORY</span><span class="short-title">HISTORY</span></h3>
+                    <span id="guesslyticsStatus"></span>
+                </div>
+                <div class="guesslytics-buttons-section">
+                    <span id="guesslyticsTimer"></span>
+                    <div class="chart-buttons">
+                        <button id="guesslyticsResyncBtn" title="Manual Sync">${ICONS.RESYNC}</button>
+                        <button id="guesslyticsToggleBtn" title="Toggle Graph Size">${ICONS.EXPAND}</button>
+                        <button id="guesslyticsSettingsBtn" title="Settings">${ICONS.SETTINGS}</button>
+                    </div>
+                </div>
             </div>
         </div>
         <div id="graphWrapper"><div id="guesslyticsStats"></div><canvas id="guesslyticsCanvas"></canvas></div>`;
@@ -230,6 +248,18 @@ export async function renderSettingsPanel(settings: Settings): Promise<void> {
         </div>`;
 
     document.getElementById('guesslyticsSettingsOverlay')!.onclick = () => (settingsPanel.style.display = 'none');
+    
+    // Add escape key listener to close settings panel
+    const handleKeyPress = (e: KeyboardEvent) => {
+        if (e.key === 'Escape' && settingsPanel.style.display === 'block') {
+            settingsPanel.style.display = 'none';
+            document.removeEventListener('keydown', handleKeyPress);
+            // Remove focus from settings button
+            const settingsBtn = document.getElementById('guesslyticsSettingsBtn') as HTMLButtonElement;
+            if (settingsBtn) settingsBtn.blur();
+        }
+    };
+    document.addEventListener('keydown', handleKeyPress);
 
     // Dispatch a custom event to signal that the settings panel has been rendered.
     // This allows the main script to attach event handlers after the panel is in the DOM.
@@ -524,6 +554,8 @@ export function startRefreshCycle(
     settings: Settings,
     checkForUpdatesCallback: () => Promise<void>
 ): void {
+    if (showingCompletionMessage) return;
+    
     if (refreshIntervalId) clearInterval(refreshIntervalId);
     if (countdownIntervalId) clearInterval(countdownIntervalId);
 
@@ -544,9 +576,13 @@ export function startRefreshCycle(
         if (remaining > 0) {
             const minutes = Math.floor(remaining / 60);
             const seconds = remaining % 60;
-            timerEl.innerText = minutes > 0
-                ? `(Next sync in ${minutes}m ${seconds}s)`
-                : `(Next sync in ${seconds}s)`;
+            const fullText = minutes > 0 && seconds > 0
+                ? `(Sync in ${minutes}m ${seconds}s)`
+                : `(Sync in ${remaining}s)`;
+            const minimalText = `${remaining}s`;
+            
+            timerEl.classList.add('minimal-display');
+            timerEl.innerHTML = `<span class="full-text">${fullText}</span><span class="minimal-text">${minimalText}</span>`;
         }
     };
 

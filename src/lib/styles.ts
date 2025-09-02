@@ -21,12 +21,59 @@ export const css = `
 }
 
 .guesslytics-header { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
     padding: 10px 15px; 
     border-bottom: 1px solid #444; 
     flex-shrink: 0; 
+}
+
+.guesslytics-header-row {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
+
+.guesslytics-buttons-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+@media (max-width: 1500px) {
+    .guesslytics-header {
+        padding: 8px 12px;
+    }
+    
+    .guesslytics-header-row {
+        gap: 10px;
+    }
+    
+    .guesslytics-buttons-section {
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    #guesslyticsTimer {
+        font-size: 10px;
+        white-space: nowrap;
+    }
+    
+    #guesslyticsTimer.minimal-display .full-text {
+        display: none;
+    }
+    
+    #guesslyticsTimer.minimal-display .minimal-text {
+        display: inline;
+    }
+    
+    .guesslytics-title-wrapper .full-title {
+        display: none;
+    }
+    
+    .guesslytics-title-wrapper .short-title {
+        display: inline !important;
+    }
+    
 }
 
 .guesslytics-title-wrapper { 
@@ -35,6 +82,14 @@ export const css = `
     gap: 10px; 
     color: #fff; 
     font-size: 14px; 
+}
+
+.guesslytics-title-wrapper h3 {
+    margin: 0;
+}
+
+.guesslytics-title-wrapper .short-title {
+    display: none;
 }
 
 #guesslyticsStatus { 
@@ -48,6 +103,14 @@ export const css = `
 #guesslyticsTimer { 
     font-size: 11px; 
     color: #888; 
+}
+
+#guesslyticsTimer.status-message {
+    color: #00BCD4;
+}
+
+#guesslyticsTimer .minimal-text {
+    display: none;
 }
 
 #graphWrapper { 
@@ -111,7 +174,7 @@ export const css = `
     color: white; 
     width: 24px; 
     height: 24px; 
-    padding: 0; 
+    padding: 1px; 
 }
 
 .chart-buttons button:hover { 
@@ -276,13 +339,15 @@ export const css = `
     animation: gg-spinner 1s linear infinite; 
     box-sizing: border-box; 
     position: relative; 
-    display: block; 
+    display: inline-block; 
     transform: scale(0.7);
     width: 16px; 
     height: 16px; 
     border: 2px solid; 
     border-top-color: transparent; 
     border-radius: 50%; 
+    margin-left: 4px;
+    vertical-align: middle;
 }
 
 @keyframes gg-spinner { 

@@ -1,6 +1,6 @@
 {
     "name": "guesslytics",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "type": "module",
     "description": "Tracks your GeoGuessr competitive duel ratings over time and displays it in a graph",
     "scripts": {
@@ -40,7 +40,7 @@
         "updateURL": "https://github.com/Avanatiker/Guesslytics/raw/main/guesslytics.user.js",
         "downloadURL": "https://github.com/Avanatiker/Guesslytics/raw/main/guesslytics.user.js",
         "namespace": "https://github.com/Avanatiker/Guesslytics",
-        "match": "*://*.geoguessr.com/multiplayer/*",
+        "match": "*://*.geoguessr.com/multiplayer*",
         "connect": "game-server.geoguessr.com",
         "grant": [
             "GM_xmlhttpRequest",
